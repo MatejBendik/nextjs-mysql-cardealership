@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import HomeCard from "../components/HomeCard";
 
 type Car = {
   id: number;
@@ -8,6 +9,13 @@ type Car = {
   model: string;
   year: number;
 };
+
+let links = [
+  { title: "Cars", link: "/cars" },
+  { title: "Employees", link: "/employees" },
+  { title: "Services", link: "/services" },
+  { title: "Travellers", link: "/travellers" },
+];
 
 export default function Home() {
   const [data, setData] = useState(null);
@@ -26,24 +34,17 @@ export default function Home() {
   if (!data) return <div>No data</div>;
 
   return (
-    <>
-      <div className="flex items-center justify-center">
-        <div className="flex justify-center items-center h-24 bg-gray-800 w-1/2 rounded-md">
-          <div className="text-white text-xl">Cars dealership</div>
-        </div>
+    <main>
+      <div className="flex flex-row justify-center py-16">
+        <h1 className="text-3xl font-medium">
+          Welcome to ultra car dealership
+        </h1>
       </div>
-      <div className="px-20 py-4">
-        {data.map((car: Car) => (
-          <div
-            key={car.id}
-            className="text-center py-4 my-2 bg-gray-700 rounded"
-          >
-            <div className="text-white text-xl">
-              {car.brand} {car.model} ({car.year})
-            </div>
-          </div>
+      <div className="grid grid-cols-2 gap-6 w-2/3 bg-blue-200 mx-auto p-8">
+        {links.map((link) => (
+          <HomeCard key={link.title} title={link.title} link={link.link} />
         ))}
       </div>
-    </>
+    </main>
   );
 }
