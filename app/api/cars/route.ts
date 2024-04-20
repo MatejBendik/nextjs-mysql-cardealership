@@ -22,8 +22,6 @@ export async function GET() {
 export async function POST(request: Request) {
   const { brand, model, year } = await request.json();
 
-  console.log("On server: ", brand, model, year);
-
   try {
     const db = await pool.getConnection();
     const query = "INSERT INTO cars (brand, model, year) VALUES (?, ?, ?)";

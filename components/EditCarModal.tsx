@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,22 +10,47 @@ import * as z from "zod";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-const addCarSchema = z.object({
+const EditCarSchema = z.object({
   brand: z.string().nonempty({ message: "Brand must be filled" }),
   model: z.string().nonempty({ message: "Model must be filled" }),
   year: z.coerce.number().int(),
 });
 
-type FormData = z.infer<typeof addCarSchema>;
+type FormData = z.infer<typeof EditCarSchema>;
 
 const AddCarModal = () => {
+  const [carData, setCarData] = useState(null);
+  const searchParams = useSearchParams();
+  const carId = searchParams.get("car_id");
+
   const {
     handleSubmit,
     register,
-    formState: { errors, isSubmitting, isDirty, isValid },
+    setValue,
+    formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(addCarSchema),
+    defaultValues: {
+      brand: "",
+      model: "",
+      year: 0,
+    },
+    resolver: zodResolver(EditCarSchema),
   });
+
+  useEffect(() => {
+    if (carId) {
+      axios.get(`/api/cars/${carId}`).then((response) => {
+        console.log("Response:", response.data);
+        setCarData(response.data);
+      });
+    }
+  }, [carId]);
+
+  useEffect(() => {
+    setValue("brand", carData?.[0].brand);
+    setValue("model", carData?.[0].model);
+    setValue("year", carData?.[0].year);
+  }, [carData]);
 
   async function onSubmit(data: FormData) {
     console.log(isSubmitting);
@@ -31,7 +58,7 @@ const AddCarModal = () => {
 
     try {
       const response = await axios
-        .post("/api/cars", {
+        .put(`/api/cars/${carId}`, {
           brand: data.brand,
           model: data.model,
           year: data.year,
@@ -45,7 +72,7 @@ const AddCarModal = () => {
       console.error(error);
     }
 
-    toast.success("Car added successfully.");
+    toast.success("Car edited successfully.");
     history.back();
   }
 
@@ -54,7 +81,7 @@ const AddCarModal = () => {
       <div className="relative p-4 w-full max-w-xl max-h-full">
         <div className="relative bg-white rounded-lg shadow-lg border">
           <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
-            <h3 className="text-lg font-semibold text-gray-900">Add Car</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Edit Car</h3>
             <Link
               href="/cars"
               className="text-gray-400 bg-transparent hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center transition duration-300 ease-in-out"
@@ -131,7 +158,7 @@ const AddCarModal = () => {
               type="submit"
               className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
             >
-              Add
+              Save
             </button>
           </form>
         </div>

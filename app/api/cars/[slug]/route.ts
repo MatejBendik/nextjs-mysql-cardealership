@@ -23,3 +23,52 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  const slug = params.slug; // car id
+
+  console.log("slug: ", slug);
+
+  try {
+    const db = await pool.getConnection();
+    const query = "DELETE FROM cars WHERE id = ?";
+    const [rows] = await db.execute(query, [slug]);
+    db.release();
+
+    return NextResponse.json(rows);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { slug: string } }
+) {
+  const slug = params.slug; // car id
+  const { brand, model, year } = await request.json();
+
+  try {
+    const db = await pool.getConnection();
+    const query = "UPDATE cars SET brand = ?, model = ?, year = ? WHERE id = ?";
+    const [rows] = await db.execute(query, [brand, model, year, slug]);
+    db.release();
+
+    return NextResponse.json(rows);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error,
+      },
+      { status: 500 }
+    );
+  }
+}
