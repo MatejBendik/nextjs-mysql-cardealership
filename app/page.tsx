@@ -1,14 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import HomeCard from "../components/HomeCard";
-
-type Car = {
-  id: number;
-  brand: string;
-  model: string;
-  year: number;
-};
 
 let links = [
   { title: "Cars", link: "/cars" },
@@ -18,21 +8,6 @@ let links = [
 ];
 
 export default function Home() {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/cars")
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data);
-        setIsLoading(false);
-      });
-  }, []);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (!data) return <div>No data</div>;
-
   return (
     <main>
       <div className="flex flex-row justify-center py-16">
