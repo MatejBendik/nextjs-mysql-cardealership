@@ -5,12 +5,23 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const slug = params.slug; // car id
+  const slug = params.slug; // car id or brand
 
   try {
     const db = await pool.getConnection();
-    const query = "SELECT * FROM cars WHERE id = ?";
+    let query = "";
+
+    // if slug is a number, then it's a car id
+    if (!isNaN(parseInt(slug))) {
+      query = "SELECT * FROM cars WHERE id = ?";
+    } else {
+      query = "SELECT * FROM cars WHERE brand = ?";
+    }
+
     const [rows] = await db.execute(query, [slug]);
+
+    console.log("rows: ", rows);
+
     db.release();
 
     return NextResponse.json(rows);

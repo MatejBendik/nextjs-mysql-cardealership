@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 import Spinner from "../../components/Spinner";
 import EditCarModal from "../../components/EditCarModal";
@@ -21,20 +24,61 @@ type SearchProps = {
   searchParams: Record<string, string> | null | undefined;
 };
 
+const carBrandSchema = z.object({
+  brand: z.string(),
+});
+
+type FormData = z.infer<typeof carBrandSchema>;
+
 export default function Cars({ searchParams }: SearchProps) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState([]);
+  const [searchBrand, setSearchBrand] = useState(searchParams?.brand || "");
   const showAddCarModal = searchParams?.add_car_modal;
   const showEditCarModal = searchParams?.edit_car_modal;
+
+  const {
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitting, isDirty, isValid },
+  } = useForm<FormData>({
+    defaultValues: {
+      brand: searchBrand || "",
+    },
+    resolver: zodResolver(carBrandSchema),
+  });
 
   useEffect(() => {
     axios.get("/api/cars").then((response) => {
       setData(response.data);
     });
-  }, [showAddCarModal, showEditCarModal]);
+  }, [showAddCarModal, showEditCarModal, searchBrand]);
 
   if (!data) {
     return <Spinner />;
   }
+
+  console.log("isDirty", isDirty);
+
+  async function onSubmit(data: FormData) {
+    console.log(isSubmitting);
+    console.log(data);
+
+    // create new search params with the brand and push it to the URL
+    const searchParams = new URLSearchParams();
+    searchParams.append("brand", data.brand);
+    window.history.pushState({}, "", `?${searchParams.toString()}`);
+    setSearchBrand(data.brand);
+
+    try {
+      const response = await axios.get(`/api/cars?brand=${data.brand}`);
+
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  console.log("searchBrand", searchBrand);
 
   const deleteCar = async (id: number) => {
     try {
@@ -101,14 +145,51 @@ export default function Cars({ searchParams }: SearchProps) {
 
       <div className="mx-6 md:mx-24">
         {/* Add car button */}
-        <div className="flex justify-left">
-          <Link
-            href="/cars?add_car_modal=true"
-            type="button"
-            className="py-1.5 px-4 md:py-2.5 md:px-5 text-sm md:text-lg font-medium text-gray-900 rounded-lg border-2 border-gray-200 bg-white hover:bg-gray-100 transition duration-150 ease-in-out"
-          >
-            Add Car
-          </Link>
+        <div className="flex flex-row justify-center items-center items-left space-x-10">
+          <div>
+            <Link
+              href="/cars?add_car_modal=true"
+              type="button"
+              className="py-1.5 px-4 md:py-2.5 md:px-5 text-sm md:text-lg font-medium text-gray-900 rounded-lg border-2 border-gray-200 bg-white hover:bg-gray-100 transition duration-150 ease-in-out"
+            >
+              Add Car
+            </Link>
+          </div>
+          <div className="w-1/2 md:w-1/3">
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="relative">
+                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                  <svg
+                    className="md:w-4 md:h-4 w-3 h-3 text-gray-500"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="search"
+                  {...register("brand")}
+                  className="block w-full p-2.5 md:p-2.5 ps-8 md:ps-10 text-sm text-gray-900 border-2 border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Search car brand..."
+                />
+                <button
+                  type="submit"
+                  className="absolute inset-y-0 end-0 text-white items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-r-lg text-sm px-3 text-center"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         {/* Table */}
@@ -134,59 +215,125 @@ export default function Cars({ searchParams }: SearchProps) {
               </tr>
             </thead>
             <tbody>
-              {data.map((car: Car) => (
-                <tr key={car.id} className="bg-white border-b hover:bg-gray-50">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
-                  >
-                    {car.id}
-                  </th>
-                  <td className="px-6 py-4">{car.brand}</td>
-                  <td className="px-6 py-4">{car.model}</td>
-                  <td className="px-6 py-4">{car.year}</td>
-                  <td className="flex items-center px-6 py-4">
-                    <Link
-                      href={`/cars?car_id=${car.id}&edit_car_modal=true`}
-                      className="font-medium text-blue-500"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5 hover:text-blue-700"
+              {searchBrand
+                ? data
+                    .filter((car: Car) =>
+                      car.brand
+                        .toLowerCase()
+                        .includes(searchBrand.toLowerCase())
+                    )
+                    .map((car: Car) => (
+                      <tr
+                        key={car.id}
+                        className="bg-white border-b hover:bg-gray-50"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                        />
-                      </svg>
-                    </Link>
-                    <button
-                      onClick={() => deleteCar(car.id)}
-                      className="font-medium text-red-500 ms-3"
+                        <th
+                          scope="row"
+                          className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
+                        >
+                          {car.id}
+                        </th>
+                        <td className="px-6 py-4">{car.brand}</td>
+                        <td className="px-6 py-4">{car.model}</td>
+                        <td className="px-6 py-4">{car.year}</td>
+                        <td className="flex items-center px-6 py-4">
+                          <Link
+                            href={`/cars?car_id=${car.id}&edit_car_modal=true`}
+                            className="font-medium text-blue-500"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-5 h-5 hover:text-blue-700"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                              />
+                            </svg>
+                          </Link>
+                          <button
+                            onClick={() => deleteCar(car.id)}
+                            className="font-medium text-red-500 ms-3"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.5}
+                              stroke="currentColor"
+                              className="w-5 h-5 hover:text-red-700"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                              />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                : data.map((car: Car) => (
+                    <tr
+                      key={car.id}
+                      className="bg-white border-b hover:bg-gray-50"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5 hover:text-red-700"
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
-                        />
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                        {car.id}
+                      </th>
+                      <td className="px-6 py-4">{car.brand}</td>
+                      <td className="px-6 py-4">{car.model}</td>
+                      <td className="px-6 py-4">{car.year}</td>
+                      <td className="flex items-center px-6 py-4">
+                        <Link
+                          href={`/cars?car_id=${car.id}&edit_car_modal=true`}
+                          className="font-medium text-blue-500"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-5 h-5 hover:text-blue-700"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                            />
+                          </svg>
+                        </Link>
+                        <button
+                          onClick={() => deleteCar(car.id)}
+                          className="font-medium text-red-500 ms-3"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-5 h-5 hover:text-red-700"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                            />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>
