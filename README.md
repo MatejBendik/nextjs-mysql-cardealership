@@ -25,7 +25,7 @@ Run dev server
 ### Create .env.local file:
 
 ```bash
-    touch .env.local
+  touch .env.local
 ```
 
 Add these variables to the .env.local file:
