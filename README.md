@@ -35,3 +35,7 @@ DB_HOST;
 DB_USER;
 DB_SCHEMA;
 ```
+
+### Built with
+
+[![My Skills](https://skillicons.dev/icons?i=nextjs,ts,tailwind,mysql)](https://skillicons.dev)
