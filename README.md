@@ -40,13 +40,13 @@ DB_SCHEMA;
 
 #### Get all cars
 
-```http
+```bash
   GET /api/cars
 ```
 
 #### Add car
 
-```http
+```bash
   POST /api/cars
 ```
 
@@ -58,7 +58,7 @@ DB_SCHEMA;
 
 #### Get car
 
-```http
+```bash
   GET /api/cars/${id|brand}
 ```
 
@@ -69,7 +69,7 @@ DB_SCHEMA;
 
 #### Delete car
 
-```http
+```bash
   DELETE /api/cars/${id}
 ```
 
@@ -79,7 +79,7 @@ DB_SCHEMA;
 
 #### Update car
 
-```http
+```bash
   PUT /api/cars/${id}
 ```
 
