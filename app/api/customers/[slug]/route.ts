@@ -5,17 +5,17 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const slug = params.slug; // car id or brand
+  const slug = params.slug; // id or name
 
   try {
     const db = await pool.getConnection();
     let query = "";
 
-    // if slug is a number, then it's a car id
+    // if slug is a number, then it's a id
     if (!isNaN(parseInt(slug))) {
       query = "SELECT * FROM Cestujuci WHERE CestujuciID = ?";
     } else {
-      query = "SELECT * FROM cars WHERE brand = ?";
+      query = "SELECT * FROM Cestujuci WHERE Meno = ?";
     }
 
     const [rows] = await db.execute(query, [slug]);
@@ -39,7 +39,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const slug = params.slug; // car id
+  const slug = params.slug; // id
 
   console.log("slug: ", slug);
 
@@ -64,13 +64,24 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const slug = params.slug; // car id
-  const { brand, model, year } = await request.json();
+  const slug = params.slug; // id
+  const { ZamestnanecID, Meno, Priezvisko, Kontakt, Platba } =
+    await request.json();
+
+  console.log({ ZamestnanecID, Meno, Priezvisko, Kontakt, Platba }, "reeeeeee");
 
   try {
     const db = await pool.getConnection();
-    const query = "UPDATE cars SET brand = ?, model = ?, year = ? WHERE id = ?";
-    const [rows] = await db.execute(query, [brand, model, year, slug]);
+    const query =
+      "UPDATE Cestujuci SET ZamestnanecID = ?, Meno = ?, Priezvisko = ?, Kontakt = ?, Platba = ? WHERE CestujuciID = ?;";
+    const [rows] = await db.execute(query, [
+      ZamestnanecID,
+      Meno,
+      Priezvisko,
+      Kontakt,
+      Platba,
+      slug,
+    ]);
     db.release();
 
     return NextResponse.json(rows);

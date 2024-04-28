@@ -11,15 +11,17 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 
 const EditCustomerSchema = z.object({
-  brand: z.string().nonempty({ message: "Brand must be filled" }),
-  model: z.string().nonempty({ message: "Model must be filled" }),
-  year: z.coerce.number().int(),
+  ZamestnanecID: z.coerce.number().int(),
+  Meno: z.string().nonempty({ message: "Meno must be filled" }),
+  Priezvisko: z.string().nonempty({ message: "Priezvisko must be filled" }),
+  Kontakt: z.string().nonempty({ message: "Kontakt must be filled" }),
+  Platba: z.coerce.number().int(),
 });
 
 type FormData = z.infer<typeof EditCustomerSchema>;
 
 const EditCustomerModal = () => {
-  const [carData, setCarData] = useState(null);
+  const [customerData, setCustomerData] = useState(null);
   const searchParams = useSearchParams();
   const customerId = searchParams.get("customer_id");
 
@@ -29,39 +31,38 @@ const EditCustomerModal = () => {
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    defaultValues: {
-      brand: "",
-      model: "",
-      year: 0,
-    },
     resolver: zodResolver(EditCustomerSchema),
   });
 
   useEffect(() => {
     if (customerId) {
-      axios.get(`/api/cars/${customerId}`).then((response) => {
+      axios.get(`/api/customers/${customerId}`).then((response) => {
         console.log("Response:", response.data);
-        setCarData(response.data);
+        setCustomerData(response.data);
       });
     }
   }, [customerId]);
 
   useEffect(() => {
-    setValue("brand", carData?.[0].brand);
-    setValue("model", carData?.[0].model);
-    setValue("year", carData?.[0].year);
-  }, [carData]);
+    setValue("ZamestnanecID", customerData?.[0].ZamestnanecID);
+    setValue("Meno", customerData?.[0].Meno);
+    setValue("Priezvisko", customerData?.[0].Priezvisko);
+    setValue("Kontakt", customerData?.[0].Kontakt);
+    setValue("Platba", customerData?.[0].Platba);
+  }, [customerData]);
 
   async function onSubmit(data: FormData) {
     console.log(isSubmitting);
-    console.log(data);
+    console.log("more data", data);
 
     try {
       const response = await axios
-        .put(`/api/cars/${customerId}`, {
-          brand: data.brand,
-          model: data.model,
-          year: data.year,
+        .put(`/api/customers/${customerId}`, {
+          ZamestnanecID: data.ZamestnanecID,
+          Meno: data.Meno,
+          Priezvisko: data.Priezvisko,
+          Kontakt: data.Kontakt,
+          Platba: data.Platba,
         })
         .then((response) => {
           console.log(response);
@@ -72,7 +73,7 @@ const EditCustomerModal = () => {
       console.error(error);
     }
 
-    toast.success("Car edited successfully.");
+    toast.success("Customer edited successfully.");
     history.back();
   }
 
@@ -107,51 +108,83 @@ const EditCustomerModal = () => {
           </div>
           <form className="p-4 md:p-5" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-4 mb-10 grid-cols-2">
-              <div className="col-span-2">
-                <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Brand
-                </label>
-                <input
-                  {...register("brand")}
-                  type="text"
-                  name="brand"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                />
-                {errors?.brand && (
-                  <p className="text-red-600 text-sm">
-                    {errors?.brand?.message}
-                  </p>
-                )}
-              </div>
               <div className="col-span-2 sm:col-span-1">
                 <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Model
+                  Zamestnanec ID
                 </label>
                 <input
-                  {...register("model")}
-                  type="text"
-                  name="model"
-                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
-                />
-                {errors?.model && (
-                  <p className="text-red-600 text-sm">
-                    {errors?.model?.message}
-                  </p>
-                )}
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block mb-2 text-sm font-medium text-gray-900">
-                  Year
-                </label>
-                <input
-                  {...register("year")}
+                  {...register("ZamestnanecID")}
                   type="number"
-                  name="year"
+                  name="ZamestnanecID"
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
                 />
-                {errors?.year && (
+                {errors?.ZamestnanecID && (
                   <p className="text-red-600 text-sm">
-                    {errors?.year?.message}
+                    {errors?.ZamestnanecID?.message}
+                  </p>
+                )}
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Meno
+                </label>
+                <input
+                  {...register("Meno")}
+                  type="text"
+                  name="Meno"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                />
+                {errors?.Meno && (
+                  <p className="text-red-600 text-sm">
+                    {errors?.Meno?.message}
+                  </p>
+                )}
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Priezvisko
+                </label>
+                <input
+                  {...register("Priezvisko")}
+                  type="text"
+                  name="Priezvisko"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                />
+                {errors?.Priezvisko && (
+                  <p className="text-red-600 text-sm">
+                    {errors?.Priezvisko?.message}
+                  </p>
+                )}
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Kontakt
+                </label>
+                <input
+                  {...register("Kontakt")}
+                  type="text"
+                  name="Kontakt"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                />
+                {errors?.Kontakt && (
+                  <p className="text-red-600 text-sm">
+                    {errors?.Kontakt?.message}
+                  </p>
+                )}
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="block mb-2 text-sm font-medium text-gray-900">
+                  Platba
+                </label>
+                <input
+                  {...register("Platba")}
+                  type="text"
+                  name="Platba"
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5"
+                />
+                {errors?.Platba && (
+                  <p className="text-red-600 text-sm">
+                    {errors?.Platba?.message}
                   </p>
                 )}
               </div>
