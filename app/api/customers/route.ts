@@ -4,7 +4,7 @@ import pool from "@/app/libs/mysql";
 export async function GET() {
   try {
     const db = await pool.getConnection();
-    const query = "SELECT * FROM cars";
+    const query = "SELECT * FROM Cestujuci LIMIT 25";
     const [rows] = await db.execute(query);
     db.release();
 

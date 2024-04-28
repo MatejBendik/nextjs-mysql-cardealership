@@ -13,7 +13,7 @@ export async function GET(
 
     // if slug is a number, then it's a car id
     if (!isNaN(parseInt(slug))) {
-      query = "SELECT * FROM cars WHERE id = ?";
+      query = "SELECT * FROM Cestujuci WHERE CestujuciID = ?";
     } else {
       query = "SELECT * FROM cars WHERE brand = ?";
     }
@@ -45,7 +45,7 @@ export async function DELETE(
 
   try {
     const db = await pool.getConnection();
-    const query = "DELETE FROM cars WHERE id = ?";
+    const query = "DELETE FROM Cestujuci WHERE CestujuciID = ?";
     const [rows] = await db.execute(query, [slug]);
     db.release();
 

@@ -13,28 +13,30 @@ import Spinner from "../../components/Spinner";
 import EditCarModal from "../../components/EditCarModal";
 import AddCarModal from "../../components/AddCarModal";
 
-type Car = {
-  id: number;
-  brand: string;
-  model: string;
-  year: number;
+type Customer = {
+  CestujuciID: number;
+  ZamestnanecID: string;
+  Meno: string;
+  Priezvisko: number;
+  Kontakt: string;
+  Platba: number;
 };
 
 type SearchProps = {
   searchParams: Record<string, string> | null | undefined;
 };
 
-const carBrandSchema = z.object({
-  brand: z.string(),
+const customerNameSchema = z.object({
+  name: z.string(),
 });
 
-type FormData = z.infer<typeof carBrandSchema>;
+type FormData = z.infer<typeof customerNameSchema>;
 
 export default function Cars({ searchParams }: SearchProps) {
   const [data, setData] = useState([]);
   const [searchBrand, setSearchBrand] = useState(searchParams?.brand || "");
-  const showAddCarModal = searchParams?.add_car_modal;
-  const showEditCarModal = searchParams?.edit_car_modal;
+  const showAddCustomerModal = searchParams?.add_customer_modal;
+  const showEditCustomerModal = searchParams?.edit_customer_modal;
 
   const {
     handleSubmit,
@@ -42,16 +44,16 @@ export default function Cars({ searchParams }: SearchProps) {
     formState: { errors, isSubmitting, isDirty, isValid },
   } = useForm<FormData>({
     defaultValues: {
-      brand: searchBrand || "",
+      name: searchBrand || "",
     },
-    resolver: zodResolver(carBrandSchema),
+    resolver: zodResolver(customerNameSchema),
   });
 
   useEffect(() => {
-    axios.get("/api/cars").then((response) => {
+    axios.get("/api/customers").then((response) => {
       setData(response.data);
     });
-  }, [showAddCarModal, showEditCarModal, searchBrand]);
+  }, [showAddCustomerModal, showEditCustomerModal, searchBrand]);
 
   if (!data) {
     return <Spinner />;
@@ -65,12 +67,12 @@ export default function Cars({ searchParams }: SearchProps) {
 
     // create new search params with the brand and push it to the URL
     const searchParams = new URLSearchParams();
-    searchParams.append("brand", data.brand);
+    searchParams.append("Meno", data.name);
     window.history.pushState({}, "", `?${searchParams.toString()}`);
-    setSearchBrand(data.brand);
+    setSearchBrand(data.name);
 
     try {
-      const response = await axios.get(`/api/cars?brand=${data.brand}`);
+      const response = await axios.get(`/api/customers?Meno=${data.name}`);
 
       console.log(response);
     } catch (error) {
@@ -82,15 +84,19 @@ export default function Cars({ searchParams }: SearchProps) {
 
   const deleteCar = async (id: number) => {
     try {
-      const responseDelete = await axios.delete(`/api/cars/${id}`);
-      const responseRefetch = await axios.get("/api/cars").then((response) => {
-        setData(response.data);
-      });
+      const responseDelete = await axios.delete(`/api/customers/${id}`);
+      console.log(responseDelete);
+      const responseRefetch = await axios
+        .get("/api/customers")
+        .then((response) => {
+          console.log(response);
+          setData(response.data);
+        });
 
       console.log(responseDelete);
       console.log(responseRefetch);
 
-      toast.success("Car deleted successfully.");
+      toast.success("Customer deleted successfully.");
     } catch (error) {
       console.error(error);
     }
@@ -98,8 +104,8 @@ export default function Cars({ searchParams }: SearchProps) {
 
   return (
     <section>
-      {showAddCarModal && <AddCarModal />}
-      {showEditCarModal && <EditCarModal />}
+      {showAddCustomerModal && <AddCarModal />}
+      {showEditCustomerModal && <EditCarModal />}
       <div className="py-16">
         <Link
           href="/"
@@ -148,11 +154,11 @@ export default function Cars({ searchParams }: SearchProps) {
         <div className="flex flex-row justify-center items-center items-left space-x-10">
           <div>
             <Link
-              href="/cars?add_car_modal=true"
+              href="/customers?add_customer_modal=true"
               type="button"
               className="py-1.5 px-4 md:py-2.5 md:px-5 text-sm md:text-lg font-medium text-gray-900 rounded-lg border-2 border-gray-200 bg-white hover:bg-gray-100 transition duration-150 ease-in-out"
             >
-              Add Car
+              Add Customer
             </Link>
           </div>
           <div className="w-1/2 md:w-1/3">
@@ -177,7 +183,7 @@ export default function Cars({ searchParams }: SearchProps) {
                 </div>
                 <input
                   type="search"
-                  {...register("brand")}
+                  {...register("name")}
                   className="block w-full p-2.5 md:p-2.5 ps-8 md:ps-10 text-sm text-gray-900 border-2 border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Search car brand..."
                 />
@@ -193,7 +199,7 @@ export default function Cars({ searchParams }: SearchProps) {
         </div>
 
         {/* Table */}
-        <div className="lg:mx-48 overflow-x-auto shadow-md sm:rounded-lg 2xl:mt-16 mt-10 mb-20">
+        <div className="overflow-x-auto shadow-md sm:rounded-lg 2xl:mt-16 mt-10 mb-20">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-200">
               <tr>
@@ -201,44 +207,52 @@ export default function Cars({ searchParams }: SearchProps) {
                   Id
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Brand
+                  Zamestnanec ID
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Model
+                  Meno
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Year
+                  Priezvisko
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Action
+                  Kontakt
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Platba
+                </th>
+                <th scope="col" className="px-6 py-3">
+                  Akcia
                 </th>
               </tr>
             </thead>
             <tbody>
               {searchBrand
                 ? data
-                    .filter((car: Car) =>
-                      car.brand
-                        .toLowerCase()
-                        .includes(searchBrand.toLowerCase())
+                    .filter((customer: Customer) =>
+                      customer.Meno.toLowerCase().includes(
+                        searchBrand.toLowerCase()
+                      )
                     )
-                    .map((car: Car) => (
+                    .map((customer: Customer) => (
                       <tr
-                        key={car.id}
+                        key={customer.CestujuciID}
                         className="bg-white border-b hover:bg-gray-50"
                       >
                         <th
                           scope="row"
                           className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
                         >
-                          {car.id}
+                          {customer.CestujuciID}
                         </th>
-                        <td className="px-6 py-4">{car.brand}</td>
-                        <td className="px-6 py-4">{car.model}</td>
-                        <td className="px-6 py-4">{car.year}</td>
+                        <td className="px-6 py-4">{customer.ZamestnanecID}</td>
+                        <td className="px-6 py-4">{customer.Meno}</td>
+                        <td className="px-6 py-4">{customer.Priezvisko}</td>
+                        <td className="px-6 py-4">{customer.Kontakt}</td>
+                        <td className="px-6 py-4">{customer.Platba} €</td>
                         <td className="flex items-center px-6 py-4">
                           <Link
-                            href={`/cars?car_id=${car.id}&edit_car_modal=true`}
+                            href={`/customers?customer_id=${customer.CestujuciID}&edit_car_modal=true`}
                             className="font-medium text-blue-500"
                           >
                             <svg
@@ -257,7 +271,7 @@ export default function Cars({ searchParams }: SearchProps) {
                             </svg>
                           </Link>
                           <button
-                            onClick={() => deleteCar(car.id)}
+                            onClick={() => deleteCar(customer.CestujuciID)}
                             className="font-medium text-red-500 ms-3"
                           >
                             <svg
@@ -278,23 +292,25 @@ export default function Cars({ searchParams }: SearchProps) {
                         </td>
                       </tr>
                     ))
-                : data.map((car: Car) => (
+                : data.map((customer: Customer) => (
                     <tr
-                      key={car.id}
+                      key={customer.CestujuciID}
                       className="bg-white border-b hover:bg-gray-50"
                     >
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
                       >
-                        {car.id}
+                        {customer.CestujuciID}
                       </th>
-                      <td className="px-6 py-4">{car.brand}</td>
-                      <td className="px-6 py-4">{car.model}</td>
-                      <td className="px-6 py-4">{car.year}</td>
+                      <td className="px-6 py-4">{customer.ZamestnanecID}</td>
+                      <td className="px-6 py-4">{customer.Meno}</td>
+                      <td className="px-6 py-4">{customer.Priezvisko}</td>
+                      <td className="px-6 py-4">{customer.Kontakt}</td>
+                      <td className="px-6 py-4">{customer.Platba} €</td>
                       <td className="flex items-center px-6 py-4">
                         <Link
-                          href={`/cars?car_id=${car.id}&edit_car_modal=true`}
+                          href={`/customers?customer_id=${customer.CestujuciID}&edit_car_modal=true`}
                           className="font-medium text-blue-500"
                         >
                           <svg
@@ -313,7 +329,7 @@ export default function Cars({ searchParams }: SearchProps) {
                           </svg>
                         </Link>
                         <button
-                          onClick={() => deleteCar(car.id)}
+                          onClick={() => deleteCar(customer.CestujuciID)}
                           className="font-medium text-red-500 ms-3"
                         >
                           <svg

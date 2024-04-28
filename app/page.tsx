@@ -1,7 +1,7 @@
 import HomeCard from "../components/HomeCard";
 
 let links = [
-  { title: "Cars", link: "/cars" },
+  { title: "Customers", link: "/customers" },
   { title: "Employees", link: "/employees" },
   { title: "Services", link: "/services" },
   { title: "Travellers", link: "/travellers" },
