@@ -4,7 +4,7 @@ import pool from "@/app/libs/mysql";
 export async function GET() {
   try {
     const db = await pool.getConnection();
-    const query = "SELECT * FROM Cestujuci LIMIT 25";
+    const query = "SELECT * FROM Cestujuci LIMIT 500";
     const [rows] = await db.execute(query);
     db.release();
 
@@ -20,12 +20,23 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { brand, model, year } = await request.json();
+  const { ZamestnanecID, meno, priezvisko, kontakt, platba } =
+    await request.json();
+
+  console.log({ ZamestnanecID, meno, priezvisko, kontakt, platba }, "request");
 
   try {
     const db = await pool.getConnection();
-    const query = "INSERT INTO cars (brand, model, year) VALUES (?, ?, ?)";
-    const [rows] = await db.execute(query, [brand, model, year]);
+    const query =
+      "INSERT INTO Cestujuci (ZamestnanecID, Meno, Priezvisko, Kontakt, Platba) VALUES (?, ?, ?, ?, ?)";
+    const [rows] = await db.execute(query, [
+      ZamestnanecID,
+      meno,
+      priezvisko,
+      kontakt,
+      platba,
+    ]);
+    console.log("rows: ", rows);
     db.release();
 
     return NextResponse.json(rows);

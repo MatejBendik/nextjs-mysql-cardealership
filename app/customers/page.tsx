@@ -10,8 +10,8 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import Spinner from "../../components/Spinner";
-import EditCarModal from "../../components/EditCarModal";
-import AddCarModal from "../../components/AddCarModal";
+import EditCustomerModal from "../../components/EditCustomerModal";
+import AddCustomerModal from "../../components/AddCustomerModal";
 
 type Customer = {
   CestujuciID: number;
@@ -104,8 +104,8 @@ export default function Cars({ searchParams }: SearchProps) {
 
   return (
     <section>
-      {showAddCustomerModal && <AddCarModal />}
-      {showEditCustomerModal && <EditCarModal />}
+      {showAddCustomerModal && <AddCustomerModal />}
+      {showEditCustomerModal && <EditCustomerModal />}
       <div className="py-16">
         <Link
           href="/"
@@ -128,7 +128,7 @@ export default function Cars({ searchParams }: SearchProps) {
         </Link>
         <div className="flex flex-row justify-center items-center space-x-1">
           <h1 className="text-lg md:text-2xl font-medium">
-            Check out all the available cars
+            Check out all the customers
           </h1>
           <div>
             <svg
@@ -185,7 +185,7 @@ export default function Cars({ searchParams }: SearchProps) {
                   type="search"
                   {...register("name")}
                   className="block w-full p-2.5 md:p-2.5 ps-8 md:ps-10 text-sm text-gray-900 border-2 border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Search car brand..."
+                  placeholder="Search customer name..."
                 />
                 <button
                   type="submit"
@@ -252,7 +252,7 @@ export default function Cars({ searchParams }: SearchProps) {
                         <td className="px-6 py-4">{customer.Platba} €</td>
                         <td className="flex items-center px-6 py-4">
                           <Link
-                            href={`/customers?customer_id=${customer.CestujuciID}&edit_car_modal=true`}
+                            href={`/customers?customer_id=${customer.CestujuciID}&edit_customer_modal=true`}
                             className="font-medium text-blue-500"
                           >
                             <svg
@@ -310,7 +310,7 @@ export default function Cars({ searchParams }: SearchProps) {
                       <td className="px-6 py-4">{customer.Platba} €</td>
                       <td className="flex items-center px-6 py-4">
                         <Link
-                          href={`/customers?customer_id=${customer.CestujuciID}&edit_car_modal=true`}
+                          href={`/customers?customer_id=${customer.CestujuciID}&edit_customer_modal=true`}
                           className="font-medium text-blue-500"
                         >
                           <svg
