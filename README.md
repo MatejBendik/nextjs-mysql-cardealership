@@ -38,57 +38,60 @@ DB_SCHEMA;
 
 ## API Reference
 
-#### Get all cars
+#### Get all customers
 
 ```bash
-  GET /api/cars
+  GET /api/customers
 ```
 
-#### Add car
+#### Add customer
 
 ```bash
-  POST /api/cars
+  POST /api/customers
 ```
 
-| Parameter | Type     | Description |
-| :-------- | :------- | :---------- |
-| `brand`   | `string` | Car brand   |
-| `model`   | `string` | Car model   |
-| `year`    | `number` | Car year    |
+| Parameter       | Type     | Description      |
+| :-------------- | :------- | :--------------- |
+| `ZamestnanecID` | `number` | Employee ID      |
+| `Meno`          | `string` | Customer name    |
+| `Priezvisko`    | `string` | Customer surname |
+| `Kontakt`       | `string` | Customer contact |
+| `Platba`        | `number` | Payment in €     |
 
-#### Get car
+#### Get customer
 
 ```bash
-  GET /api/cars/${id|brand}
+  GET /api/customers/${id|Name}
 ```
 
-| Parameter | Type     | Description               |
-| :-------- | :------- | :------------------------ |
-| `id`      | `number` | Id of the car to fetch    |
-| `brand`   | `string` | Brand of the car to fetch |
+| Parameter | Type     | Description                   |
+| :-------- | :------- | :---------------------------- |
+| `id`      | `number` | Id of the customer to fetch   |
+| `Name`    | `string` | Name of the customer to fetch |
 
-#### Delete car
+#### Delete customer
 
 ```bash
-  DELETE /api/cars/${id}
+  DELETE /api/customers/${id}
 ```
 
-| Parameter | Type     | Description             |
-| :-------- | :------- | :---------------------- |
-| `id`      | `number` | Id of the car to delete |
+| Parameter | Type     | Description                  |
+| :-------- | :------- | :--------------------------- |
+| `id`      | `number` | Id of the customer to delete |
 
-#### Update car
+#### Update customer
 
 ```bash
-  PUT /api/cars/${id}
+  PUT /api/customers/${id}
 ```
 
-| Parameter | Type     | Description             |
-| :-------- | :------- | :---------------------- |
-| `id`      | `number` | Id of the car to delete |
-| `brand`   | `string` | Car brand               |
-| `model`   | `string` | Car model               |
-| `year`    | `number` | Car year                |
+| Parameter       | Type     | Description      |
+| :-------------- | :------- | :--------------- |
+| `ZamestnanecID` | `number` | Employee ID      |
+| `Meno`          | `string` | Customer name    |
+| `Priezvisko`    | `string` | Customer surname |
+| `Kontakt`       | `string` | Customer contact |
+| `Platba`        | `number` | Payment in €     |
 
 ### Built with
 
